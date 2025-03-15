@@ -1,0 +1,72 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: tenant-minimal
+  namespace: tenant-root
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: tenant
+      version: ">=1.0.0"
+      sourceRef:
+        kind: HelmRepository
+        name: cozystack
+        namespace: flux-system
+  values:
+    name: tenant-minimal
+    domains:
+    - tenant-minimal.example.com
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: tenant-minimal-services
+  namespace: tenant-root
+spec:
+  interval: 5m
+  dependsOn:
+  - name: tenant-minimal
+  chart:
+    spec:
+      chart: staging
+      version: ">=0.1.0"
+      sourceRef:
+        kind: GitRepository
+        name: infra-main
+        namespace: tenant-root
+  values:
+    tenant: tenant-minimal
+    kubernetes:
+      enabled: true
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 200m
+          memory: 256Mi
+      cilium:
+        enabled: true
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+    postgres:
+      enabled: true
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 300m
+          memory: 512Mi
+    clickhouse:
+      enabled: false
+    kafka:
+      enabled: false
+    rabbitmq:
+      enabled: false

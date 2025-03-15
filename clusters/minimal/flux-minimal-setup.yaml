@@ -1,0 +1,25 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: infra-main
+  namespace: tenant-root
+spec:
+  url: https://github.com/stellarAlien/cozystack-gitops-example.git  # Or your forked repo
+  ref:
+    branch: main
+  interval: 5m0s
+  timeout: 60s
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: infra-main-minimal
+  namespace: tenant-root
+spec:
+  force: false
+  interval: 10m0s
+  path: ./clusters/minimal
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: infra-main
